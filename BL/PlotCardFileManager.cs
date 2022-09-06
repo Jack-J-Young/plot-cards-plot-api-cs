@@ -11,27 +11,35 @@ namespace BL
             // Get byte array size
             var arraySize = PltFileConstants.Header.Length;
 
-            // Get size block
-            var sizeBlock = UIntArrayToBigEndianByteArray(new uint[] { plotCard.Width, plotCard.Height });
-
-            var sizeBlockSize = UIntToBigEndianByteArray((uint)sizeBlock.Length);
-
+            var sizeBlock = GenerateSizeBlock(plotCard);
             arraySize += sizeBlock.Length;
-            arraySize += sizeBlockSize.Length;
 
-            arraySize += PltFileConstants.SizeBlock.Length;
 
+            // Create byte array
             var byteArray = new byte[arraySize];
 
             // Header
             PltFileConstants.Header.CopyTo(byteArray, 0);
 
             // Size Block
-            sizeBlockSize.CopyTo(byteArray, 4);
-            PltFileConstants.SizeBlock.CopyTo(byteArray, 8);
-            sizeBlock.CopyTo(byteArray, 12);
+            sizeBlock.CopyTo(byteArray, 4);
+
 
             return byteArray;
+        }
+         
+        public static byte[] GenerateSizeBlock(PlotCard plotCard)
+        {
+            var sizeBlockData = new byte[16];
+
+            var sizeBlock = UIntArrayToBigEndianByteArray(new uint[] { plotCard.Width, plotCard.Height });
+            var sizeBlockSize = UIntToBigEndianByteArray((uint)sizeBlock.Length);
+
+            sizeBlockSize.CopyTo(sizeBlockData, 0);
+            PltFileConstants.SizeBlock.CopyTo(sizeBlockData, 4);
+            sizeBlock.CopyTo(sizeBlockData, 8);
+
+            return sizeBlockData;
         }
 
         public static byte[] UIntToBigEndianByteArray(uint UInt)
